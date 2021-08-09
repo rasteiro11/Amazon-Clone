@@ -1,2 +1,2 @@
-# Amazona ECommerce Website
+# Amazon-Clone 
 
