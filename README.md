@@ -1,4 +1,4 @@
-# Amazon-Clone 
+# Amazon Clone (MERN E-Commerce Site)
 * ### Front-End Technologies 
   - React
   - Redux
