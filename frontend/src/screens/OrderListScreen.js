@@ -1,82 +1,163 @@
-import React, { useEffect } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
-import { deleteOrder, listOrders } from '../actions/orderActions'
-import LoadingBox from '../components/LoadingBox'
-import MessageBox from '../components/MessageBox'
-import { ORDER_DELETE_RESET } from '../constants/orderConstants'
+import React from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { BrowserRouter, Link, Route } from 'react-router-dom';
+import { signout } from '../actions/userActions'
+import AdminRoute from '../components/AdminRoute';
+import PrivateRoute from '../components/PrivateRoute';
+import CartScreen from '../screens/CartScreen';
+import HomeScreen from '../screens/HomeScreen';
+import OrderHistoryScreen from '../screens/OrderHistoryScreen';
+import OrderScreen from '../screens/OrderScreen';
+import PaymentMethodScreen from '../screens/PaymentMethodScreen';
+import PlaceOrderScreen from '../screens/PlaceOrderScreen';
+import ProductListScreen from '../screens/ProductListScreen';
+import ProductScreen from '../screens/ProductScreen';
+import ProfileScreen from '../screens/ProfileScreen';
+import RegisterScreen from '../screens/RegisterScreen';
+import ShippingAddressScreen from '../screens/ShippingAddressScreen';
+import SigninScreen from '../screens/SigninScreen';
+import ProductEditScreen from '../screens/ProductEditScreen';
+import OrderListScreen from '../screens/OrderListScreen';
+import UserListScreen from '../screens/UserListScreen';
+import UserEditScreen from '../screens/UserEditScreen';
+import SellerRoute from '../components/SellerRoute';
+import SellerScreen from '../screens/SellerScreen';
 
-export default function OrderListScreen(props) {
-    const sellerMode = props.match.path.indexOf('/seller') >= 0
-    const orderList = useSelector(state => state.orderList)
-    const { loading, error, orders } = orderList
-    const orderDelete = useSelector(state => state.orderDelete)
-    const { loading: loadingDelete, error: errorDelete, success: successDelete } = orderDelete
-    const userSignin = useSelector((state) => state.userSignin)
-    const { userInfo } = userSignin
-    const dispatch = useDispatch()
-    useEffect(() => {
-        dispatch(listOrders({ seller: sellerMode ? userInfo._id : '' }))
-        dispatch({ type: ORDER_DELETE_RESET })
-    }, [dispatch, successDelete])
-    const deleteHandler = (order) => {
-        if (window.confirm('Are you sure to delete ? ')) {
-            dispatch(deleteOrder(order._id))
-        }
-    }
+function App() {
+    const cart = useSelector((state) => state.cart);
+    const { cartItems } = cart;
+    const userSignin = useSelector((state) => state.userSignin);
+    const { userInfo } = userSignin;
+    const dispatch = useDispatch();
+    const signoutHandler = () => {
+        dispatch(signout());
+    };
     return (
-        <div>
-            <h1>Orders</h1>
-            {loadingDelete && <LoadingBox></LoadingBox>}
-            {errorDelete && <MessageBox variant="danger">{errorDelete}</MessageBox>}
-            {loading ? (
-                <LoadingBox></LoadingBox>
-            ) : error ? (
-                <MessageBox variant="danger">{error}</MessageBox>
-            ) : (
-                <table className="table">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>USER</th>
-                            <th>DATE</th>
-                            <th>TOTAL</th>
-                            <th>PAID</th>
-                            <th>DELIVERED</th>
-                            <th>ACTIONS</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {orders.map((order) => (
-                            <tr key={order._id}>
-                                <td>{order._id}</td>
-                                <td>{order.user.name}</td>
-                                <td>{order.createdAt.substring(0, 10)}</td>
-                                <td>{order.totalPrice.toFixed(2)}</td>
-                                <td>{order.isPaid ? order.paidAt.substring(0, 10) : 'No'}</td>
-                                <td>
-                                    {order.isDelivered
-                                        ? order.deliveredAt.substring(0, 10)
-                                        : 'No'}
-                                </td>
-                                <td>
-                                    <button
-                                        type="button"
-                                        className="small"
-                                        onClick={() => {
-                                            props.history.push(`/order/${order._id}`);
-                                        }}
-                                    >
-                                        Details
-                                    </button>
-                                    <button type="button" className="small" onClick={() => deleteHandler(order)} >
-                                        Delete
-                                    </button>
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            )}
-        </div>
-    )
+        <BrowserRouter>
+            <div className="grid-container">
+                <header className="row">
+                    <div>
+                        <Link className="brand" to="/">
+                            amazona
+                        </Link>
+                    </div>
+                    <div>
+                        <Link to="/cart">
+                            Cart
+                            {cartItems.length > 0 && (
+                                <span className="badge">{cartItems.length}</span>
+                            )}
+                        </Link>
+                        {userInfo ? (
+                            <div className="dropdown">
+                                <Link to="#">
+                                    {userInfo.name} <i className="fa fa-caret-down"></i>{' '}
+                                </Link>
+                                <ul className="dropdown-content">
+                                    <li>
+                                        <Link to="/profile">User Profile</Link>
+                                    </li>
+                                    <li>
+                                        <Link to="/orderhistory">Order History</Link>
+                                    </li>
+                                    <li>
+                                        <Link to="#signout" onClick={signoutHandler}>
+                                            Sign Out
+                                        </Link>
+                                    </li>
+                                </ul>
+                            </div>
+                        ) : (
+                            <Link to="/signin">Sign In</Link>
+                        )}
+                        {userInfo && userInfo.isSeller && (
+                            <div className="dropdown">
+                                <Link to="#admin">
+                                    Seller <i className="fa fa-caret-down"></i>
+                                </Link>
+                                <ul className="dropdown-content">
+                                    <li>
+                                        <Link to="/productlist/seller">Products</Link>
+                                    </li>
+                                    <li>
+                                        <Link to="/orderlist/seller">Orders</Link>
+                                    </li>
+                                </ul>
+                            </div>
+                        )}
+                        {userInfo && userInfo.isAdmin && (
+                            <div className="dropdown">
+                                <Link to="#admin">
+                                    Admin <i className="fa fa-caret-down"></i>
+                                </Link>
+                                <ul className="dropdown-content">
+                                    <li>
+                                        <Link to="/dashboard">Dashboard</Link>
+                                    </li>
+                                    <li>
+                                        <Link to="/productlist">Products</Link>
+                                    </li>
+                                    <li>
+                                        <Link to="/orderlist">Orders</Link>
+                                    </li>
+                                    <li>
+                                        <Link to="/userlist">Users</Link>
+                                    </li>
+                                </ul>
+                            </div>
+                        )}
+                    </div>
+                </header>
+                <main>
+                    <Route path="/seller/:id" component={SellerScreen}></Route>
+                    <Route path="/cart/:id?" component={CartScreen}></Route>
+                    <Route path="/product/:id" component={ProductScreen} exact></Route>
+                    <Route
+                        path="/product/:id/edit"
+                        component={ProductEditScreen}
+                        exact
+                    ></Route>
+                    <Route path="/signin" component={SigninScreen}></Route>
+                    <Route path="/register" component={RegisterScreen}></Route>
+                    <Route path="/shipping" component={ShippingAddressScreen}></Route>
+                    <Route path="/payment" component={PaymentMethodScreen}></Route>
+                    <Route path="/placeorder" component={PlaceOrderScreen}></Route>
+                    <Route path="/order/:id" component={OrderScreen}></Route>
+                    <Route path="/orderhistory" component={OrderHistoryScreen}></Route>
+                    <PrivateRoute
+                        path="/profile"
+                        component={ProfileScreen}
+                    ></PrivateRoute>
+                    <AdminRoute
+                        path="/productlist"
+                        component={ProductListScreen}
+                        exact
+                    ></AdminRoute>
+                    <AdminRoute
+                        path="/orderlist"
+                        component={OrderListScreen}
+                        exact
+                    ></AdminRoute>
+                    <AdminRoute path="/userlist" component={UserListScreen}></AdminRoute>
+                    <AdminRoute
+                        path="/user/:id/edit"
+                        component={UserEditScreen}
+                    ></AdminRoute>
+                    <SellerRoute
+                        path="/productlist/seller"
+                        component={ProductListScreen}
+                    ></SellerRoute>
+                    <SellerRoute
+                        path="/orderlist/seller"
+                        component={OrderListScreen}
+                    ></SellerRoute>
+
+                    <Route path="/" component={HomeScreen} exact></Route>
+                </main>
+                <footer className="row center">All right reserved</footer>
+            </div>
+        </BrowserRouter>
+    );
 }
+
+export default App;
