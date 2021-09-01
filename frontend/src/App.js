@@ -29,6 +29,8 @@ import LoadingBox from './components/LoadingBox';
 import MessageBox from './components/MessageBox';
 import MapScreen from './screens/MapScreen';
 import DashboradScreen from './screens/DashboradScreen';
+import SupportScreen from './screens/SupportScreen';
+import ChatBox from './components/ChatBox';
 
 function App() {
   const cart = useSelector((state) => state.cart);
@@ -135,6 +137,9 @@ function App() {
                   <li>
                     <Link to="/userlist">Users</Link>
                   </li>
+                  <li>
+                    <Link to="/support">Support</Link>
+                  </li>
                 </ul>
               </div>
             )}
@@ -238,6 +243,10 @@ function App() {
             path="/dashboard"
             component={DashboradScreen}
           ></AdminRoute>
+          <AdminRoute
+            path="/support"
+            component={SupportScreen}
+          ></AdminRoute>
           <SellerRoute
             path="/productlist/seller"
             component={ProductListScreen}
@@ -249,7 +258,9 @@ function App() {
 
           <Route path="/" component={HomeScreen} exact></Route>
         </main>
-        <footer className="row center">All right reserved</footer>
+        <footer className="row center">
+          {userInfo && !userInfo.isAdmin && <ChatBox userInfo={userInfo} />}
+          <div></div> All right reserved</footer>
       </div>
     </BrowserRouter>
   );
